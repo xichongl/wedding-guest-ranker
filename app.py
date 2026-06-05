@@ -51,7 +51,7 @@ def login_required(f):
 
 def create_app():
     app = Flask(__name__)
-    app.secret_key = os.urandom(24)
+    app.secret_key = os.environ.get("SECRET_KEY", os.urandom(24))
 
     # Ensure data directory exists
     data_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data")
@@ -508,9 +508,13 @@ if __name__ == "__main__":
     import argparse
 
     parser = argparse.ArgumentParser(description="Wedding Guest Ranker")
-    parser.add_argument("-p", "--port", type=int, default=5050, help="Port to listen on")
+    parser.add_argument("-p", "--port", type=int, default=None, help="Port to listen on")
     parser.add_argument("--no-debug", action="store_true", help="Disable debug mode")
     args = parser.parse_args()
 
+    # Use PORT env var (Render sets this) or CLI arg, fall back to 5050
+    port = int(os.environ.get("PORT", args.port or 5050))
+    debug = not args.no_debug and "RENDER" not in os.environ
+
     app = create_app()
-    app.run(debug=not args.no_debug, port=args.port)
+    app.run(debug=debug, host="0.0.0.0", port=port)
