@@ -1,0 +1,172 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="fade-in">
+    <h1 style="font-size: 1.8rem; font-weight: 700; margin-bottom: 24px;">
+        💍 Wedding Guest Priority Ranker
+    </h1>
+
+    <!-- Stats Grid -->
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-value">{{ stats.total_guests }}</div>
+            <div class="stat-label">Total Guests</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-value" style="color: var(--color-success);">{{ stats.ranked_count }}</div>
+            <div class="stat-label">Ranked</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-value" style="color: var(--color-warning);">{{ stats.unranked_count }}</div>
+            <div class="stat-label">Remaining</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-value">{{ stats.comparison_count }}</div>
+            <div class="stat-label">Comparisons</div>
+        </div>
+    </div>
+
+    <!-- Progress -->
+    {% if stats.total_guests > 0 %}
+    <div class="card">
+        <div class="card-header">📊 Progress</div>
+        <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
+            <span class="text-sm text-muted">{{ stats.ranked_count }} of {{ stats.total_guests }} guests ranked</span>
+            <span class="text-sm" style="font-weight: 600;">{{ stats.percent_complete }}%</span>
+        </div>
+        <div class="progress-bar">
+            <div class="progress-fill" style="width: {{ stats.percent_complete }}%;"></div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Top 5 Preview -->
+    {% if top5 %}
+    <div class="card">
+        <div class="card-header">🏆 Current Top 5</div>
+        <ol class="top5-list">
+            {% for guest in top5 %}
+            <li class="top5-item">
+                <span class="top5-rank">#{{ guest.position + 1 }}</span>
+                <span class="result-name">{{ guest.name }}</span>
+                {% if guest.category %}
+                <span class="badge badge-default">{{ guest.category }}</span>
+                {% endif %}
+                {% if guest.tier %}
+                <span class="badge badge-{{ guest.tier.replace('_', '-') if guest.tier else 'default' }}">
+                    {{ {"must_invite": "Must Invite", "should_invite": "Should Invite",
+                        "nice_to_have": "Nice to Have", "only_if_space": "Only If Space"}.get(guest.tier, guest.tier) }}
+                </span>
+                {% endif %}
+            </li>
+            {% endfor %}
+        </ol>
+    </div>
+    {% endif %}
+
+    <!-- Session Management -->
+    <div class="card">
+        <div class="card-header">👥 Ranking Sessions</div>
+        <p class="text-sm text-muted mb-4">Create separate sessions for you and your partner, then compare rankings.</p>
+        <div class="session-switcher" style="margin-bottom: 12px;">
+            <select id="session-select" class="form-select" style="max-width: 300px;"></select>
+            <button id="btn-switch-session" class="btn btn-primary btn-sm">Switch</button>
+        </div>
+        <div style="display: flex; gap: 8px;">
+            <input type="text" id="new-session-name" class="form-input" placeholder="New session name (e.g. Partner's Rankings)" style="max-width: 250px;">
+            <button id="btn-create-session" class="btn btn-outline btn-sm">➕ Create Session</button>
+        </div>
+        <div id="session-status" class="text-sm text-muted mt-2"></div>
+    </div>
+
+    <!-- Actions -->
+    <div class="card">
+        <div class="card-header">🚀 Quick Actions</div>
+        <div class="dashboard-actions">
+            {% if stats.unranked_count > 0 or stats.in_progress_count > 0 %}
+            <a href="/compare" class="btn btn-primary btn-lg">▶ Start Ranking</a>
+            {% endif %}
+            <a href="/guests" class="btn btn-outline btn-lg">👥 Manage Guests</a>
+            {% if stats.ranked_count > 0 %}
+            <a href="/results" class="btn btn-outline btn-lg">📋 View Results</a>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Getting Started -->
+    {% if stats.total_guests == 0 %}
+    <div class="card" style="text-align: center; padding: 48px 24px;">
+        <div style="font-size: 3rem; margin-bottom: 16px;">💒</div>
+        <h2 style="margin-bottom: 8px;">Welcome to Guest Ranker!</h2>
+        <p class="text-muted mb-4">
+            Modeled after the Beli app — use pairwise comparisons to rank your wedding guests
+            and build the perfect priority invite list.
+        </p>
+        <div style="margin-bottom: 16px;">
+            <strong>How it works:</strong>
+        </div>
+        <ol style="text-align: left; max-width: 500px; margin: 0 auto; line-height: 2;">
+            <li>Add your guest list (paste names or import CSV)</li>
+            <li>Optionally assign categories &amp; priority tiers</li>
+            <li>Compare guests head-to-head — pick who you'd rather invite</li>
+            <li>Let the binary sort algorithm rank everyone</li>
+            <li>Fine-tune with manual drag-and-drop or Elo refinement</li>
+        </ol>
+        <a href="/guests" class="btn btn-primary btn-lg mt-4">Get Started — Add Guests</a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Session management
+    async function loadSessions() {
+        try {
+            const resp = await fetch('/api/sessions');
+            const sessions = await resp.json();
+            const select = document.getElementById('session-select');
+            select.innerHTML = sessions.map(s =>
+                `<option value="${s.id}">${s.name}</option>`
+            ).join('');
+
+            // Show active session
+            const settingsResp = await fetch('/api/settings');
+            const settings = await settingsResp.json();
+            const activeId = settings.active_session || 'default';
+            select.value = activeId;
+            document.getElementById('session-status').textContent =
+                `Active: ${sessions.find(s => s.id === activeId)?.name || 'My Rankings'}`;
+        } catch (e) {
+            console.error(e);
+        }
+    }
+
+    document.getElementById('btn-switch-session').addEventListener('click', async () => {
+        const sessionId = document.getElementById('session-select').value;
+        try {
+            await fetch(`/api/sessions/${sessionId}/switch`, { method: 'POST' });
+            location.reload();
+        } catch (e) {
+            alert('Failed to switch session');
+        }
+    });
+
+    document.getElementById('btn-create-session').addEventListener('click', async () => {
+        const name = document.getElementById('new-session-name').value.trim();
+        if (!name) { alert('Please enter a session name'); return; }
+        try {
+            await fetch('/api/sessions', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ name }),
+            });
+            document.getElementById('new-session-name').value = '';
+            await loadSessions();
+        } catch (e) {
+            alert('Failed to create session');
+        }
+    });
+
+    loadSessions();
+</script>
+{% endblock %}

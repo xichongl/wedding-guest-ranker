@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="fade-in">
+    <h1 style="font-size: 1.8rem; font-weight: 700; margin-bottom: 24px;">📜 Comparison History</h1>
+
+    <!-- Stats -->
+    <div class="history-stats" id="history-stats">
+        <div class="history-stat">
+            <div class="value" id="stat-total">—</div>
+            <div class="label">Total Comparisons</div>
+        </div>
+        <div class="history-stat">
+            <div class="value" id="stat-upset">—</div>
+            <div class="label">Biggest Upset</div>
+        </div>
+        <div class="history-stat">
+            <div class="value" id="stat-most">—</div>
+            <div class="label">Most Compared</div>
+        </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="card" style="margin-bottom: 16px;">
+        <div style="display: flex; gap: 12px; flex-wrap: wrap; align-items: end;">
+            <div class="form-group" style="min-width: 200px;">
+                <label class="form-label">Filter by Guest:</label>
+                <select id="filter-guest" class="form-select">
+                    <option value="">All Guests</option>
+                </select>
+            </div>
+            <div class="form-group" style="min-width: 160px;">
+                <label class="form-label">Filter by Phase:</label>
+                <select id="filter-phase" class="form-select">
+                    <option value="">All Phases</option>
+                    <option value="binary_insertion">Binary Insertion Sort</option>
+                    <option value="refinement">Elo Refinement</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <button id="btn-clear-history-filters" class="btn btn-outline btn-sm">Clear Filters</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- History List -->
+    <div class="card">
+        <div class="card-header">📋 All Comparisons</div>
+        <div id="history-list">
+            <div class="empty-state">
+                <div class="icon">📜</div>
+                <h3>Loading history...</h3>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="/static/js/history.js"></script>
+{% endblock %}

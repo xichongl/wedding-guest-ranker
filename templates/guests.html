@@ -1,0 +1,136 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="fade-in">
+    <h1 style="font-size: 1.8rem; font-weight: 700; margin-bottom: 24px;">👥 Manage Guests</h1>
+
+    <!-- Import Section -->
+    <div class="card">
+        <div class="card-header">📥 Add Guests</div>
+        <div class="form-group">
+            <label class="form-label" for="guest-input">Paste names (one per line, or "Name,Category"):</label>
+            <textarea id="guest-input" class="form-textarea"
+                placeholder="John Smith&#10;Jane Doe,Family&#10;Bob Johnson,Friends&#10;Alice Williams,Coworkers"></textarea>
+            <div class="form-hint">
+                Each line = one guest. Optionally add a category after a comma: "Name,Category"
+            </div>
+        </div>
+
+        <div style="display: flex; gap: 12px; flex-wrap: wrap; align-items: end;">
+            <div class="form-group" style="min-width: 180px;">
+                <label class="form-label">Default Category:</label>
+                <select id="import-category" class="form-select">
+                    <option value="">— None —</option>
+                    {% for cat in settings.categories %}
+                    <option value="{{ cat.id }}">{{ cat.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="form-group" style="min-width: 180px;">
+                <label class="form-label">Default Tier:</label>
+                <select id="import-tier" class="form-select">
+                    <option value="">— None —</option>
+                    {% for tier in settings.tiers %}
+                    <option value="{{ tier.id }}">{{ tier.label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="form-group">
+                <button id="btn-import" class="btn btn-primary">➕ Add Guests</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Guest Table -->
+    <div class="card">
+        <div class="card-header" style="justify-content: space-between;">
+            <span>📋 Guest List (<span id="guest-count">{{ guests|length }}</span>)</span>
+            <div style="display: flex; gap: 8px;">
+                <button id="btn-reset-all" class="btn btn-outline btn-sm" title="Reset all rankings">
+                    🔄 Reset Rankings
+                </button>
+            </div>
+        </div>
+
+        <!-- Bulk Action Bar -->
+        <div class="bulk-bar hidden" id="bulk-bar">
+            <span class="selected-count" id="selected-count">0 selected</span>
+            <span style="font-size: 0.85rem; color: var(--color-text-muted);">Assign tier:</span>
+            {% for tier in settings.tiers %}
+            <button class="btn btn-outline btn-sm bulk-tier-btn" data-tier="{{ tier.id }}">{{ tier.label }}</button>
+            {% endfor %}
+            <button class="btn btn-outline btn-sm bulk-tier-btn" data-tier="">Clear Tier</button>
+        </div>
+
+        {% if guests %}
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th><input type="checkbox" id="select-all" class="guest-checkbox" title="Select all"></th>
+                        <th>#</th>
+                        <th>Name</th>
+                        <th>Notes</th>
+                        <th>Category</th>
+                        <th>Tier</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="guest-table-body">
+                    {% for guest in guests %}
+                    <tr data-guest-id="{{ guest.id }}">
+                        <td><input type="checkbox" class="guest-checkbox guest-select" data-guest-id="{{ guest.id }}"></td>
+                        <td style="width: 30px; color: var(--color-text-muted);">{{ loop.index }}</td>
+                        <td class="guest-name-cell">{{ guest.name }}</td>
+                        <td>
+                            <input type="text" class="form-input notes-input" data-guest-id="{{ guest.id }}"
+                                value="{{ guest.notes or '' }}" placeholder="+1, kids, dietary..."
+                                style="min-width: 140px; font-size: 0.8rem; padding: 6px 8px;">
+                        </td>
+                        <td>
+                            <select class="form-select category-select" data-guest-id="{{ guest.id }}" style="min-width: 120px;">
+                                <option value="">—</option>
+                                {% for cat in settings.categories %}
+                                <option value="{{ cat.id }}" {% if guest.category == cat.id %}selected{% endif %}>{{ cat.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </td>
+                        <td>
+                            <select class="form-select tier-select" data-guest-id="{{ guest.id }}" style="min-width: 120px;">
+                                <option value="">—</option>
+                                {% for tier in settings.tiers %}
+                                <option value="{{ tier.id }}" {% if guest.tier == tier.id %}selected{% endif %}>{{ tier.label }}</option>
+                                {% endfor %}
+                            </select>
+                        </td>
+                        <td>
+                            {% if guest.status == 'ranked' %}
+                            <span class="badge badge-must">Ranked #{{ guest.position + 1 if guest.position is not none else '?' }}</span>
+                            {% elif guest.status == 'in_progress' %}
+                            <span class="badge badge-should">In Progress</span>
+                            {% else %}
+                            <span class="badge badge-default">Unranked</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <button class="btn btn-outline btn-sm delete-guest" data-guest-id="{{ guest.id }}">🗑</button>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <div class="icon">📝</div>
+            <h3>No guests yet</h3>
+            <p>Paste your guest list above to get started!</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="/static/js/guests.js"></script>
+{% endblock %}

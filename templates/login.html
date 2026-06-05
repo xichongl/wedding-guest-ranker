@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login — Wedding Guest Ranker</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body class="login-body">
+    <div class="login-container">
+        <div class="login-card">
+            <div class="login-header">
+                <div class="login-icon">💍</div>
+                <h1>Wedding Guest Ranker</h1>
+                <p class="login-subtitle">Sign in to continue</p>
+            </div>
+
+            {% if error %}
+            <div class="login-error">{{ error }}</div>
+            {% endif %}
+
+            <form method="POST" action="/login" class="login-form">
+                <div class="form-group">
+                    <label class="form-label" for="username">Username</label>
+                    <input
+                        type="text"
+                        id="username"
+                        name="username"
+                        class="form-input login-input"
+                        placeholder="Enter username"
+                        required
+                        autofocus
+                    >
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="password">Passcode</label>
+                    <input
+                        type="password"
+                        id="password"
+                        name="password"
+                        class="form-input login-input"
+                        placeholder="Enter passcode"
+                        required
+                    >
+                </div>
+
+                <button type="submit" class="btn btn-primary login-btn">🔐 Sign In</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // Dark mode support for login page
+        (function() {
+            const saved = localStorage.getItem('theme');
+            if (saved === 'dark' || (!saved && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+                document.documentElement.setAttribute('data-theme', 'dark');
+            }
+        })();
+    </script>
+</body>
+</html>

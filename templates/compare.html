@@ -1,0 +1,93 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="fade-in">
+    <h1 style="font-size: 1.8rem; font-weight: 700; margin-bottom: 24px;">⚖️ Compare Guests</h1>
+
+    <!-- Progress Section -->
+    <div class="card compare-progress" id="progress-section">
+        <div class="card-header">📊 Ranking Progress</div>
+        <div id="progress-info" style="margin-bottom: 8px;">
+            <span class="text-muted">Loading...</span>
+        </div>
+        <div class="progress-bar">
+            <div class="progress-fill" id="progress-fill" style="width: 0%;"></div>
+        </div>
+        <div id="current-guest-info" class="text-sm text-muted mt-2"></div>
+    </div>
+
+    <!-- Mode Toggle -->
+    <div class="mode-toggle" id="mode-toggle">
+        <span>Ranking Mode:</span>
+        <span id="mode-label-serial" style="font-weight: 600;">Serial (Beli-style)</span>
+        <label class="toggle-switch">
+            <input type="checkbox" id="smart-mode-checkbox">
+            <span class="toggle-slider"></span>
+        </label>
+        <span id="mode-label-smart">Smart Matchmaking</span>
+    </div>
+
+    <!-- Comparison Area -->
+    <div class="compare-container" id="compare-active">
+        <div class="compare-prompt">Who would you rather invite to your wedding?</div>
+
+        <div class="compare-cards">
+            <!-- Guest A (usually the new guest being placed) -->
+            <div class="compare-card" id="card-a" data-guest-id="">
+                <div class="swipe-indicator swipe-indicator-left">⬅️</div>
+                <div class="guest-name" id="name-a">—</div>
+                <div class="guest-meta" id="meta-a"></div>
+                <div class="guest-notes" id="notes-a"></div>
+                <div class="swipe-indicator swipe-indicator-right">➡️</div>
+            </div>
+
+            <div class="compare-or">VS</div>
+
+            <!-- Guest B (existing ranked guest) -->
+            <div class="compare-card" id="card-b" data-guest-id="">
+                <div class="swipe-indicator swipe-indicator-left">⬅️</div>
+                <div class="guest-name" id="name-b">—</div>
+                <div class="guest-meta" id="meta-b"></div>
+                <div class="guest-notes" id="notes-b"></div>
+                <div class="swipe-indicator swipe-indicator-right">➡️</div>
+            </div>
+        </div>
+
+        <div class="mobile-swipe-hint">
+            <span>⬅️ Swipe left to pick</span>
+            <span>Swipe right to pick ➡️</span>
+        </div>
+
+        <div class="compare-hint">
+            💡 Tip: <kbd>←</kbd> <kbd>→</kbd> arrow keys to choose · <kbd>Ctrl+Z</kbd> to undo · <kbd>S</kbd> to skip
+        </div>
+
+        <div class="skip-section" style="display: flex; gap: 8px; justify-content: center;">
+            <button id="btn-undo" class="btn btn-outline btn-sm">↩ Undo</button>
+            <button id="btn-skip" class="btn btn-outline btn-sm">🤷 Can't Decide — Skip</button>
+        </div>
+    </div>
+
+    <!-- Done State -->
+    <div id="compare-done" class="card empty-state hidden">
+        <div class="icon">🎉</div>
+        <h3>All Guests Ranked!</h3>
+        <p id="done-message">You've successfully ranked all your wedding guests.</p>
+        <div class="dashboard-actions" style="justify-content: center; margin-top: 16px;">
+            <a href="/results" class="btn btn-primary btn-lg">📋 View Results</a>
+            <a href="/guests" class="btn btn-outline btn-lg">👥 Manage Guests</a>
+        </div>
+    </div>
+
+    <!-- No Guests State -->
+    <div id="compare-empty" class="card empty-state hidden">
+        <div class="icon">📝</div>
+        <h3>No Guests to Rank</h3>
+        <p>Add some guests first before starting comparisons.</p>
+        <a href="/guests" class="btn btn-primary mt-4">Add Guests</a>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="/static/js/compare.js"></script>
+{% endblock %}

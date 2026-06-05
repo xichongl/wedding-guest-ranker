@@ -1,0 +1,93 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="fade-in">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; flex-wrap: wrap; gap: 12px;">
+        <h1 style="font-size: 1.8rem; font-weight: 700;">📋 Ranked Guest List</h1>
+        <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+            <button id="btn-refine" class="btn btn-outline">🔬 Refine Rankings</button>
+            <a href="/api/export" class="btn btn-outline">📥 Export CSV</a>
+        </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="card">
+        <div style="display: flex; gap: 12px; flex-wrap: wrap; align-items: end;">
+            <div class="form-group" style="min-width: 160px;">
+                <label class="form-label">Filter by Category:</label>
+                <select id="filter-category" class="form-select">
+                    <option value="">All Categories</option>
+                    {% for cat in settings.categories %}
+                    <option value="{{ cat.id }}">{{ cat.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="form-group" style="min-width: 160px;">
+                <label class="form-label">Filter by Tier:</label>
+                <select id="filter-tier" class="form-select">
+                    <option value="">All Tiers</option>
+                    {% for tier in settings.tiers %}
+                    <option value="{{ tier.id }}">{{ tier.label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="form-group">
+                <button id="btn-clear-filters" class="btn btn-outline btn-sm">Clear Filters</button>
+            </div>
+            <div class="form-group" style="margin-left: auto;">
+                <span id="result-count" class="text-muted text-sm"></span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Cutoff Line Control -->
+    <div class="cutoff-control" id="cutoff-control">
+        <label for="cutoff-input">🎯 Invite Target:</label>
+        <input type="number" id="cutoff-input" placeholder="e.g. 120" min="0" value="">
+        <span>guests</span>
+        <span class="cutoff-summary" id="cutoff-summary"></span>
+    </div>
+
+    <!-- Results List -->
+    <div class="card">
+        <div class="card-header" style="justify-content: space-between;">
+            <span>🏆 Rankings</span>
+            <span class="text-sm text-muted">Drag to reorder</span>
+        </div>
+
+        <ul id="results-list" class="results-list">
+            <li class="empty-state">
+                <div class="icon">📊</div>
+                <h3>Loading results...</h3>
+            </li>
+        </ul>
+    </div>
+
+    <!-- Refinement Mode Overlay -->
+    <div id="refine-section" class="card hidden">
+        <div class="card-header">🔬 Refinement Mode</div>
+        <div class="refine-card">
+            <div id="refine-status" class="text-sm text-muted mb-4"></div>
+            <div class="compare-prompt" style="font-size: 1.1rem;">Reconfirm: Who would you rather invite?</div>
+            <div class="compare-cards" style="margin-bottom: 16px;">
+                <div class="compare-card" id="refine-card-a" style="padding: 32px 20px;">
+                    <div class="guest-name" id="refine-name-a" style="font-size: 1.3rem;">—</div>
+                    <div class="guest-meta" id="refine-meta-a"></div>
+                </div>
+                <div class="compare-or">VS</div>
+                <div class="compare-card" id="refine-card-b" style="padding: 32px 20px;">
+                    <div class="guest-name" id="refine-name-b" style="font-size: 1.3rem;">—</div>
+                    <div class="guest-meta" id="refine-meta-b"></div>
+                </div>
+            </div>
+            <div style="display: flex; gap: 8px; justify-content: center;">
+                <button id="btn-refine-skip" class="btn btn-outline btn-sm">Skip</button>
+                <button id="btn-refine-quit" class="btn btn-outline btn-sm">Quit Refinement</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="/static/js/results.js"></script>
+{% endblock %}
